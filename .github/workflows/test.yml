@@ -9,8 +9,8 @@ jobs:
         with:
           python-version: '3.12'
       - run: docker build -t laity-shorts:test .
-      - run: docker run --rm --entrypoint nginx laity-shorts:test -t
-      - run: docker run --detach --name shorts-test -p 127.0.0.1:18080:8080 laity-shorts:test
+      - run: docker run --rm --read-only --tmpfs /tmp:rw,nosuid,noexec,uid=101,gid=101,mode=0700 laity-shorts:test -t
+      - run: docker run --detach --name shorts-test --user 12345:23456 --read-only --tmpfs /tmp:rw,nosuid,noexec,uid=12345,gid=23456,mode=0700 --cap-drop=ALL --security-opt=no-new-privileges -p 127.0.0.1:18080:8080 laity-shorts:test
       - name: Wait for local Nginx
         run: |
           for attempt in $(seq 1 30); do
@@ -19,5 +19,9 @@ jobs:
           done
           exit 1
       - run: python -m unittest discover -s tests -v
+      - name: Verify non-root container remains running
+        run: |
+          test "$(docker exec shorts-test id -u)" = 12345
+          test "$(docker inspect --format '{{.State.Running}}/{{.RestartCount}}' shorts-test)" = true/0
       - if: always()
         run: docker rm --force shorts-test
