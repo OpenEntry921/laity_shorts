@@ -14,6 +14,7 @@ class SiteTests(unittest.TestCase):
     def test_upload_integrity(self):
         items = json.loads((ROOT / 'media.json').read_text())
         self.assertEqual([item['id'] for item in items], ['responsibility', 'offering', 'example'])
+        self.assertEqual(len({item['sha256'] for item in items}), 3)
         for item in items:
             with self.subTest(video=item['id']):
                 binary = ROOT / 'public/videos' / (item['id'] + '.mp4')
@@ -26,7 +27,7 @@ class SiteTests(unittest.TestCase):
         items = json.loads((ROOT / 'media.json').read_text())
         self.assertEqual((ROOT / 'public/index.html').read_text(), build.render(items))
         for number, item in enumerate(items, 1):
-            self.assertEqual((ROOT / f'public/video-{number}.html').read_text(), build.render([item]))
+            self.assertEqual((ROOT / f'public/video-{number}.html').read_text(), build.render(items, start=item['id']))
 
     def test_pages_keep_native_fallback_and_no_extra_ui(self):
         for page in (ROOT / 'public').glob('*.html'):
