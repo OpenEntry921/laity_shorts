@@ -1,3 +1,48 @@
 # laity_shorts
 
-첨부 MP4 세 개를 직접 제공하는 독립 영상 페이지입니다.
+## 로컬 실행
+
+Docker가 필요합니다. 저장소 루트에서 실행합니다.
+
+    docker build -t laity-shorts .
+    docker run --rm -p 8080:8080 laity-shorts
+
+브라우저에서 http://localhost:8080 으로 접속합니다. Python 기본 파일 서버는 개별 영상의 쿼리 라우팅과 Range 검증을 대신하지 않습니다.
+
+## Cloudtype에 새 서비스 추가
+
+GitHub 연결 후 **새로운 서비스/애플리케이션**을 만들고 이 저장소의 Dockerfile로 배포합니다. 기존 서비스나 도메인을 삭제·분할·이전하지 않습니다. 새 서비스에는 별도 자원이 필요할 수 있으며 기존 요금제가 자동 분할된다고 가정하지 않습니다.
+
+## 저장소·브랜치·Dockerfile·포트
+
+- 저장소: OpenEntry921/laity_shorts
+- 브랜치: 수동 병합 후 main (검토 브랜치: feat/mobile-video-sharing)
+- Dockerfile: 저장소 루트의 Dockerfile, 빌드 컨텍스트도 저장소 루트
+- 노출 포트: 8080 / HTTP
+- 시작 명령: 이미지 기본 Nginx 명령 사용
+- 별도 환경변수·DB·영구 디스크·외부 API 설정 없음
+
+## 기본 HTTPS 주소 확인
+
+배포 완료 후 **새 서비스** 화면에 표시되는 Cloudtype 기본 HTTPS 접속 주소를 복사합니다. 별도 도메인 구매나 기존 도메인 변경은 필요 없습니다. 아직 이 프로젝트의 Cloudtype 서비스와 주소는 생성하지 않았습니다.
+
+## 개별 영상 링크
+
+발급된 기본 HTTPS 주소에 다음 경로를 붙입니다.
+
+| 경로 | 표시 |
+| --- | --- |
+| / | 3개 영상을 지정 순서대로 표시 |
+| /?v=1 | 권한에 책임이 뒤따릅니다 |
+| /?v=2 | 본질을 훼손마세요 |
+| /?v=3 | 누가 매일 나오라고 합니까? |
+
+잘못된 v 값은 기본 화면으로 처리합니다.
+
+## 영상 교체
+
+새 원본을 public/videos/responsibility.mp4, offering.mp4, example.mp4에 대응시켜 그대로 복사합니다. MP4를 재인코딩하지 않습니다. 개발 컴퓨터에 Python 3·FFmpeg가 있으면 다음 명령으로 메타데이터·체크섬·첫 화면 포스터·페이지의 캐시 버전을 갱신합니다.
+
+    python3 scripts/refresh_media.py
+
+media.json의 원본 식별명(source_name)도 새 첨부명으로 갱신하고 포스터가 선명한 첫 화면인지 확인합니다. 필요하다면 해당 포스터만 가까운 선명한 프레임으로 다시 추출한 뒤 python3 scripts/build.py를 실행합니다. 변경 파일을 커밋하고 새 이미지를 배포하면 됩니다. 생성된 HTML을 직접 편집하거나 오래된 영상 URL을 하드코딩하지 않습니다.

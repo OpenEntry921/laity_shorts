@@ -1,0 +1,23 @@
+name: Static video site
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: docker build -t laity-shorts:test .
+      - run: docker run --rm --entrypoint nginx laity-shorts:test -t
+      - run: docker run --detach --name shorts-test -p 127.0.0.1:18080:8080 laity-shorts:test
+      - name: Wait for local Nginx
+        run: |
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:18080/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          exit 1
+      - run: python -m unittest discover -s tests -v
+      - if: always()
+        run: docker rm --force shorts-test
