@@ -13,16 +13,21 @@ BASE = os.environ.get('SHORTS_BASE_URL', 'http://127.0.0.1:18080')
 class HTTPTests(unittest.TestCase):
     def test_routes_and_private_cache(self):
         ids = ['responsibility', 'offering', 'example']
-        for query, selected in [('', ids), ('?v=1', ids[:1]), ('?v=2', ids[1:2]), ('?v=3', ids[2:]), ('?v=0', ids), ('?v=4', ids), ('?v=abc', ids), ('?v=', ids), ('?v=01', ids), ('?v=../../', ids)]:
+        queries = [('', 'responsibility'), ('?reel=responsibility', 'responsibility'),
+                   ('?reel=essence', 'offering'), ('?reel=prayer', 'example'),
+                   ('?reel=wrong', 'responsibility'), ('?reel=', 'responsibility'),
+                   ('?reel=ESSENCE', 'responsibility'), ('?v=2', 'responsibility')]
+        for query, first in queries:
             with self.subTest(query=query), urlopen(BASE + '/' + query) as response:
                 html = response.read().decode()
                 self.assertEqual(response.status, 200)
                 self.assertEqual(response.headers.get_content_type(), 'text/html')
                 self.assertEqual(response.headers['Cache-Control'], 'no-store')
                 self.assertEqual(response.headers['X-Robots-Tag'], 'noindex, nofollow')
-                self.assertEqual(html.count('<video '), len(selected))
+                self.assertEqual(html.count('<video '), 3)
+                self.assertEqual(html.split('<source src="/videos/', 1)[1].split('.mp4', 1)[0], first)
                 for key in ids:
-                    self.assertEqual(f'/videos/{key}.mp4?' in html, key in selected)
+                    self.assertEqual(html.count(f'/videos/{key}.mp4?'), 1)
 
     def test_original_video_bytes_mime_ranges_and_version_cache(self):
         for item in json.loads((ROOT / 'media.json').read_text()):
