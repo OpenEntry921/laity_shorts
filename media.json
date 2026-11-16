@@ -11,7 +11,12 @@
     "video_codec": "h264",
     "audio": [
       "aac"
-    ]
+    ],
+    "reel_id": "responsibility",
+    "video": "responsibility.mp4",
+    "poster": "responsibility.jpg",
+    "published": true,
+    "send_date": "2026-11-17"
   },
   {
     "id": "offering",
@@ -25,7 +30,12 @@
     "video_codec": "h264",
     "audio": [
       "aac"
-    ]
+    ],
+    "reel_id": "essence",
+    "video": "offering.mp4",
+    "poster": "offering.jpg",
+    "published": true,
+    "send_date": "2026-11-19"
   },
   {
     "id": "example",
@@ -39,6 +49,11 @@
     "video_codec": "h264",
     "audio": [
       "aac"
-    ]
+    ],
+    "reel_id": "prayer",
+    "video": "example.mp4",
+    "poster": "example.jpg",
+    "published": true,
+    "send_date": "2026-11-21"
   }
 ]

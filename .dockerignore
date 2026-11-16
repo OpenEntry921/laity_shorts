@@ -4,3 +4,7 @@
 !nginx-main.conf
 !public/
 !public/**
+
+!scripts/
+!scripts/build.py
+!media.json

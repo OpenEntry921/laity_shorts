@@ -2,4 +2,4 @@
 
 .reel-count{position:fixed;top:calc(env(safe-area-inset-top,0px) + 12px);right:calc(env(safe-area-inset-right,0px) + 12px);padding:4px 9px;background:rgba(0,0,0,.7);border-radius:16px;font-size:13px;pointer-events:none}.swipe-hint{position:fixed;bottom:calc(env(safe-area-inset-bottom,0px) + 64px);left:50%;transform:translateX(-50%);max-width:calc(100% - 24px);margin:0;padding:6px 12px;background:rgba(0,0,0,.75);border-radius:16px;font-size:14px;white-space:nowrap;pointer-events:none}@supports(height:100dvh){:root{--screen:100dvh}}
 
-.js .clip[data-order="0"]{order:0}.js .clip[data-order="1"]{order:1}.js .clip[data-order="2"]{order:2}
+.empty{align-self:center;margin:auto;padding:24px;text-align:center;font-size:18px;line-height:1.8}main[data-mode="single"]{overflow:hidden}
