@@ -5,9 +5,12 @@ history.scrollRestoration = 'manual';
 
 function initReels() {
   const feed = document.getElementById('feed');
+  if (!feed) return;
   const clips = [...feed.querySelectorAll('.clip')].sort((a, b) => Number(a.dataset.order) - Number(b.dataset.order));
   const counter = document.querySelector('.reel-count');
   const hint = document.querySelector('.swipe-hint');
+  if (!clips.length) { feed.dataset.ready = 'true'; return; }
+  const multiple = clips.length > 1;
   let activeClip = null;
   let hintDismissed = false;
   const players = clips.map((clip) => {
@@ -39,7 +42,7 @@ function initReels() {
 
   async function start(player, retry = false) {
     activate(player.clip);
-    hint.hidden = true;
+    if (hint) hint.hidden = true;
     hintDismissed = true;
     const attempt = ++player.attempt;
     pauseOthers(player);
@@ -69,7 +72,7 @@ function initReels() {
     player.video.addEventListener('play', () => {
       if (player.video.paused) return;
       if (player.clip !== activeClip) { player.video.pause(); return; }
-      hint.hidden = true;
+      if (hint) hint.hidden = true;
       hintDismissed = true;
       pauseOthers(player);
       player.play.hidden = true;
@@ -89,8 +92,8 @@ function initReels() {
     if (activeClip) hintDismissed = true;
     activeClip = clip;
     const index = clips.indexOf(clip);
-    counter.textContent = (index + 1) + ' / ' + clips.length;
-    hint.hidden = hintDismissed || index !== 0;
+    if (counter) counter.textContent = (index + 1) + ' / ' + clips.length;
+    if (hint) hint.hidden = hintDismissed || index !== 0;
     for (const player of players) {
       const selected = player.clip === clip;
       player.video.tabIndex = selected ? 0 : -1;
@@ -101,9 +104,8 @@ function initReels() {
         player.video.pause();
       }
     }
-    const url = new URL('/', window.location.origin);
-    url.searchParams.set('reel', clip.dataset.reel);
-    if (window.location.href !== url.href) history.replaceState(history.state, '', url);
+    // Keep the base page as / when scrolling; a copied address must not silently
+    // switch the reader into single-video mode on refresh.
   }
 
   function nearestClip() {
@@ -113,17 +115,11 @@ function initReels() {
       Math.abs(nearest.offsetTop + nearest.offsetHeight / 2 - center) ? clip : nearest);
   }
 
-  function positionFromURL() {
-    const requested = new URL(window.location.href).searchParams.get('reel');
-    const target = clips.find(clip => clip.dataset.reel === requested) || clips[0];
-    feed.scrollTop = target.offsetTop;
-    activate(target);
-  }
-
-  const initial = clips.find(clip => clip.dataset.reel === feed.dataset.start) || clips[0];
-  feed.scrollTop = initial.offsetTop;
+  const initial = clips[0];
+  feed.scrollTop = 0;
   activate(initial);
   feed.dataset.ready = 'true';
+  if (!multiple) return;
 
   let scrollFrame = 0;
   feed.addEventListener('scroll', () => {
@@ -133,8 +129,7 @@ function initReels() {
       activate(nearestClip());
     });
   }, { passive: true });
-  window.addEventListener('popstate', positionFromURL);
-  window.addEventListener('pageshow', event => { if (event.persisted) positionFromURL(); });
+  window.addEventListener('pageshow', event => { if (event.persisted) activate(nearestClip()); });
 
 }
 if (document.readyState === 'loading') {

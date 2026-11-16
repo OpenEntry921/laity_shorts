@@ -19,6 +19,8 @@ jobs:
           done
           exit 1
       - run: python -m unittest discover -s tests -v
+      - name: Verify four isolated publication states
+        run: python scripts/verify_publication.py
       - name: Verify non-root container remains running
         run: |
           test "$(docker exec shorts-test id -u)" = 12345

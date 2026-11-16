@@ -1,56 +1,83 @@
 # laity_shorts
 
-## 로컬 실행
+## 현재 상태와 공유 방식
 
-Docker가 필요합니다. 저장소 루트에서 실행합니다.
+이번 변경은 **수동 병합·배포 후 적용 예정**입니다. 실제 Cloudtype 배포는 실행하지 않았습니다. 작업 기준 main은 `b3968f2`이며 세 영상 모두 배포 대상이었습니다. 운영 HTTPS 주소는 개발 환경의 프록시 CONNECT 403 때문에 실제 배포 범위를 확인하지 못했습니다. 사용자는 세 전용 페이지를 미리 공개하고 발송일에 링크만 보내는 방식을 선택했습니다. 현재 설정은 세 편 모두 published=true이며 날짜에 따른 자동 공개는 없습니다.
 
+- `/`: `media.json`에서 공개한 영상만 기존 순서대로 표시. 여러 편이면 세로 스크롤·스와이프.
+- `/?reel=responsibility`, `/?reel=essence`, `/?reel=prayer`: 해당 영상 **한 편만** 표시. 다른 영상의 제목·포스터·재생 주소·이동 링크 없음.
+- 미공개 영상의 개별 링크: “아직 공개되지 않은 영상입니다.”만 표시.
+- 잘못된 reel 값: 기본 화면. 공개 영상이 없으면 “공개된 영상이 아직 없습니다.” 표시.
+
+| 한국시간 발송 계획 | reel_id | 영상·원본 보관 경로 | 저장소 공개 설정 |
+| --- | --- | --- | --- |
+| 2026. 11. 17. | responsibility | 권한과 책임 / public/videos/responsibility.mp4 | true |
+| 2026. 11. 19. | essence | 목적헌금의 본질 / public/videos/offering.mp4 | true |
+| 2026. 11. 21. | prayer | 예배·기도·사역 참여 / public/videos/example.mp4 | true |
+
+세 페이지를 미리 공개해도 링크를 17·19·21일에 따로 보낼 수 있습니다. 발송 전 파일 접근도 막으려면, 배포 전 `media.json`에서 첫 편만 `published: true`, 나머지는 `false`로 바꾸고 아래 절차로 각각 수동 공개합니다. 이미 공개·다운로드된 영상의 회수나 비밀 유지를 보장하지 않습니다.
+
+## 공개 상태 변경과 다음 영상 발송
+
+단일 설정 `media.json`에서 `reel_id`, `label`, `video`, `poster`, `published`, `send_date` 및 파일 식별 정보를 관리합니다. 날짜는 발송 계획일 뿐 자동 공개 기능이 아닙니다. `published`를 생략하면 미공개입니다.
+
+1. 19일·21일에 순차 공개하려면 해당 영상의 `published`를 `true`로 변경합니다. 다른 영상 상태는 의도한 대로 유지합니다.
+2. `python3 scripts/build.py`와 테스트·Docker 검사를 실행합니다.
+3. 별도 브랜치에서 커밋하고 PR을 만듭니다.
+4. 사용자가 수동 검토·병합하고 Cloudtype에서 기존 방식으로 배포합니다. 파일 수정이나 날짜 도달만으로 운영 사이트가 바뀌지 않습니다.
+5. 배포된 개별 링크·영상·포스터·Range 응답을 확인한 뒤 문자를 보냅니다.
+
+개별 링크와 문자 예시는 [docs/SHARING.md](docs/SHARING.md)를 참고하세요.
+
+## 로컬 실행과 검사
+
+Docker와 Python 3이 필요합니다. Nginx가 정적 HTML·MP4를 제공하며 DB·API 서버는 없습니다.
+
+    python3 scripts/build.py
     docker build -t laity-shorts .
     docker run --rm -p 8080:8080 laity-shorts
 
-브라우저에서 http://localhost:8080 으로 접속합니다. 이미지는 비루트 UID/GID 101:101로 실행되며 플랫폼이 다른 숫자 UID/GID를 지정해도 동작합니다. Python 기본 파일 서버는 개별 영상의 쿼리 라우팅과 Range 검증을 대신하지 않습니다.
+브라우저에서 http://localhost:8080 으로 접속합니다. `public/`는 원본 보관 디렉터리이므로 파일 서버로 직접 제공하지 마세요. 배포는 필터링된 `dist/site`만 사용합니다. 쿼리 라우팅과 HTTP Range 검사는 실제 Nginx에서 수행합니다.
 
-## Cloudtype에 새 서비스 추가
+    python3 -m unittest discover -s tests -p test_site.py -v
+    python3 scripts/verify_publication.py
 
-GitHub 연결 후 **새로운 서비스/애플리케이션**을 만들고 이 저장소의 Dockerfile로 배포합니다. 기존 서비스나 도메인을 삭제·분할·이전하지 않습니다. 새 서비스에는 별도 자원이 필요할 수 있으며 기존 요금제가 자동 분할된다고 가정하지 않습니다.
+로컬에 Playwright·Chromium이 설치되어 있으면 네 공개 상태의 브라우저 검사도 실행할 수 있습니다.
 
-## 저장소·브랜치·Dockerfile·포트
+    python3 scripts/verify_publication.py --browser
 
-- 저장소: OpenEntry921/laity_shorts
-- 브랜치: 수동 병합 후 main
-- Dockerfile: 저장소 루트의 Dockerfile, 빌드 컨텍스트도 저장소 루트
-- 노출 포트: 8080 / HTTP
-- 시작 명령: 이미지 기본값 사용 (nginx를 daemon off로 직접 실행)
-- 별도 환경변수·DB·영구 디스크·외부 API 설정 없음
+검사는 임시 복사본에서 공개 0·1·2·3개 상태를 빌드하고 별도 로컬 컨테이너를 사용합니다. 저장소 공개 설정이나 운영 서비스는 수정하지 않습니다. 상세 결과와 제한은 [docs/VALIDATION.md](docs/VALIDATION.md)에 기록합니다.
 
-설정 파일은 이미지 빌드 시 고정됩니다. nginx-main.conf는 전역 프로세스 설정, 기존 nginx.conf는 사이트 설정입니다. 런타임 설정 변경 스크립트나 환경변수 치환이 필요하지 않습니다. root 실행·추가 권한 없이 PID와 다섯 임시 디렉터리만 /tmp 아래에 생성하므로, 읽기 전용 루트 파일시스템에서도 /tmp는 실행 UID가 쓸 수 있어야 합니다. 기본 이미지의 entrypoint 초기화는 사용하지 않으며 별도 시작 명령을 지정할 필요가 없습니다. 오류 로그는 표준 오류, 전역 접근 로그는 표준 출력으로 보냅니다. 사이트의 기존 접근 로그 비활성 설정은 유지합니다.
+## 빌드와 미공개 파일 제외
 
-## 기본 HTTPS 주소 확인
+Docker의 Python 빌드 단계가 `media.json`을 읽어 공개 파일만 `dist/site`에 복사합니다. 최종 이미지는 기존 Nginx 기반이며 Python이나 원본 보관 디렉터리를 포함하지 않습니다. MP4·포스터는 원본 바이트 그대로 복사합니다. HTML과 reel 라우팅 맵도 동일 설정에서 생성합니다.
 
-배포 완료 후 **새 서비스** 화면에 표시되는 Cloudtype 기본 HTTPS 접속 주소를 복사합니다. 별도 도메인 구매나 기존 도메인 변경은 필요 없습니다.
+각 빌드는 출력을 비우고 새로 만들므로 과거 HTML·MP4·포스터가 남지 않습니다. 미공개 파일은 최종 정적 디렉터리에 없어 직접 요청도 404입니다. source인 public 디렉터리는 최종 이미지에 통째로 복사하지 않습니다. 영상 URL `/videos/<기존 파일명>.mp4`와 포스터 URL은 유지하고 내용 SHA-256의 버전 쿼리를 사용합니다. 기본 HTML과 개별 HTML은 no-store, 버전 있는 미디어는 기존 immutable 캐시 정책을 유지합니다.
 
-## 개별 영상 링크
+생성 HTML은 커밋하지 않으며 직접 편집하지 않습니다. 예전 `/video-1.html` 등 주소도 동일한 공개 상태를 적용한 한 편 전용 페이지로 유지합니다.
 
-현재 사용하는 기본 HTTPS 주소는 다음과 같습니다. 아래 변경은 수동 병합·배포 후 적용됩니다. 이번 작업에서는 배포하지 않았으며 운영 주소의 새 동작은 아직 확인하지 않았습니다.
+## 영상 교체·새 영상 추가
 
-https://port-0-laity-shorts-mv4itaiva5851d33.sel3.cloudtype.app
+기존 영상 교체는 정확한 원본 파일을 `video` 경로에 그대로 복사한 뒤 아래 명령으로 해당 영상만 검사·포스터 추출합니다. MP4는 재인코딩하지 않습니다.
 
-| 경로 | 처음 표시할 영상 | 파일 |
-| --- | --- | --- |
-| / | 권한과 책임부터 순서대로 3개 | 전체 |
-| /?reel=responsibility | 권한에 책임이 뒤따릅니다 | public/videos/responsibility.mp4 |
-| /?reel=essence | 본질을 훼손마세요 | public/videos/offering.mp4 |
-| /?reel=prayer | 누가 매일 나오라고 합니까? | public/videos/example.mp4 |
+    python3 scripts/refresh_media.py --reel responsibility
 
-개별 링크도 세 영상을 모두 포함합니다. 모바일은 위아래 스와이프, PC는 휠·터치패드로 이전/다음 영상으로 이동합니다. 현재 영상이 바뀌면 주소를 replaceState로 갱신하며 뒤로가기 기록은 늘리지 않습니다. reel이 없거나 잘못되면 첫 번째 영상부터 표시합니다. 기존 숫자 v 쿼리는 영상 선택에 사용하지 않습니다.
+추가 릴스 1~2개도 같은 방식으로 등록할 수 있습니다.
 
-현재 목적헌금 원본의 확인된 내용은 목적헌금·원심 판단·소명·복직입니다. 십일조 장면은 확인되지 않았으며 영상을 편집하거나 다른 파일로 대체하지 않았습니다.
+1. 실제 MP4를 제공받아 public/videos/에 새 영문 파일명으로 보관합니다. 기존 파일·ID·발송 링크를 재사용하지 않습니다.
+2. `media.json` 끝에 새 항목을 추가합니다. 고유 `id`, 고유 `reel_id`, 실제 제목(label), source_name, video, poster, send_date를 입력하고 **published는 false**로 둡니다. 아직 없는 영상을 등록하거나 빈 카드를 만들지 않습니다.
+3. `python3 scripts/refresh_media.py --reel <새 reel_id>`로 실제 메타데이터·SHA-256·첫 화면 포스터를 생성하고 선명한 화면인지 검수합니다. 다른 영상의 포스터는 재생성하지 않습니다.
+4. 빌드·검사·PR·수동 병합/배포 절차로 등록하고, 공개할 때만 published를 true로 바꾸어 다시 배포합니다.
+5. 개별 링크는 `현재 사이트 주소/?reel=<새 reel_id>`입니다. 기존 영상의 링크와 연결은 유지됩니다.
 
-문자 공유 문안과 전체 예정 링크는 docs/SHARING.md에 있습니다.
+새 라우팅은 설정에서 자동 생성되므로 Nginx에 ID를 수동 추가할 필요가 없습니다. 영상 제작·편집 기능은 없습니다.
 
-## 영상 교체
+## Cloudtype 설정 유지
 
-새 원본을 public/videos/responsibility.mp4, offering.mp4, example.mp4에 대응시켜 그대로 복사합니다. MP4를 재인코딩하지 않습니다. 개발 컴퓨터에 Python 3·FFmpeg가 있으면 다음 명령으로 메타데이터·체크섬·첫 화면 포스터·페이지의 캐시 버전을 갱신합니다.
+기존 별도 서비스의 저장소 OpenEntry921/laity_shorts, 수동 병합 후 main, 루트 Dockerfile, 빌드 컨텍스트 저장소 루트, **HTTP 8080**을 사용합니다. 시작 명령은 이미지 기본값인 nginx 포그라운드 실행을 유지합니다. 별도 환경변수·DB·디스크는 필요 없습니다.
 
-    python3 scripts/refresh_media.py
+비루트 UID/GID 101:101과 등록되지 않은 숫자 UID/GID를 지원합니다. nginx-main.conf의 PID와 다섯 임시 경로는 /tmp 아래이고 로그는 표준 출력·오류입니다. 읽기 전용 루트에서는 실행 UID가 쓸 수 있는 /tmp가 필요합니다. 기본 entrypoint 초기화나 런타임 설정 수정은 사용하지 않습니다.
 
-media.json의 원본 식별명(source_name)도 새 첨부명으로 갱신하고 포스터가 선명한 첫 화면인지 확인합니다. 필요하다면 해당 포스터만 가까운 선명한 프레임으로 다시 추출한 뒤 python3 scripts/build.py를 실행합니다. 변경 파일을 커밋하고 새 이미지를 배포하면 됩니다. 생성된 HTML을 직접 편집하거나 오래된 영상 URL을 하드코딩하지 않습니다.
+도메인 구매·DNS 변경 없이 기존 기본 HTTPS 주소를 사용합니다. 새 서비스가 필요할 때만 Cloudtype에서 별도 서비스를 추가하고 기본 HTTPS 주소를 확인하세요. 기존 서비스를 삭제·분할·이전하지 않습니다. 새 서비스 자원이 기존 요금제에서 자동 분할된다고 가정하지 않습니다.
+
+noindex/nofollow는 검색 노출 제한 지시이며 접근 제한 기능은 아닙니다. 외부 폰트·분석·추적 스크립트는 없습니다. 이번 작업에서는 Cloudtype 서비스·요금제·환경변수·도메인·DNS를 변경하지 않습니다.
