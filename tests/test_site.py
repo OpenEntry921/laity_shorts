@@ -16,6 +16,7 @@ ORIGINAL_HASHES = {
     'responsibility': 'd68992e2ac642092dee5deca8a167fc41f9509f523a678d8d1a24afc72cc2ae1',
     'offering': '4f4a5b2d377e129ee05d8cd009c97b0d60db2cc846dbab6c643d2fa952c450ae',
     'example': 'dc670f192f40e0c3d6a45af3ef1de542b1b54ece7de10bde7644ae5c19d058b6',
+    'sinsamo': '6521ea048ee7a12a4900df4156c2b4adcbbb764afbfb0d6d2191c5d674ed1b15',
 }
 
 
@@ -36,13 +37,15 @@ class SiteTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             manifest, output = Path(d) / 'media.json', Path(d) / 'dist'
             # Reuse one output through withdrawals and additions; stale files must disappear.
-            for count in [3, 0, 2, 1]:
-                items = copy.deepcopy(ITEMS[:3])
+            for count in [4, 3, 0, 2, 1]:
+                items = copy.deepcopy(ITEMS)
                 for index, item in enumerate(items): item['published'] = index < count
                 manifest.write_text(json.dumps(items))
                 site = build.build(manifest, output)
                 index = (site / 'index.html').read_text()
                 self.assertEqual(index.count('<video '), count)
+                positions = [index.index(f'data-reel="{item["reel_id"]}"') for item in items[:count]]
+                self.assertEqual(positions, sorted(positions))
                 if count == 0: self.assertIn('공개된 영상이 아직 없습니다.', index)
                 self.assertEqual('class="reel-count"' in index, count > 1)
                 for number, item in enumerate(items, 1):

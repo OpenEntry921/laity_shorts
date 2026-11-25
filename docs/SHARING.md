@@ -7,6 +7,7 @@
 | responsibility | 권한에 책임이 뒤따릅니다 | public/videos/responsibility.mp4 | https://port-0-laity-shorts-mv4itaiva5851d33.sel3.cloudtype.app/?reel=responsibility |
 | essence | 본질을 훼손마세요 | public/videos/offering.mp4 | https://port-0-laity-shorts-mv4itaiva5851d33.sel3.cloudtype.app/?reel=essence |
 | prayer | 누가 매일 나오라고 합니까? | public/videos/example.mp4 | https://port-0-laity-shorts-mv4itaiva5851d33.sel3.cloudtype.app/?reel=prayer |
+| sinsamo | 우리 교회에 무슨 일이 일어나고 있을까요? | public/videos/sinsamo.mp4 | https://port-0-laity-shorts-mv4itaiva5851d33.sel3.cloudtype.app/?reel=sinsamo |
 
 각 링크에는 해당 영상 한 편만 표시합니다. 다른 릴스 이동·목록·홈 링크가 없습니다. 기본 주소 /에서만 공개한 여러 영상을 볼 수 있습니다. 기본 화면의 스크롤은 주소를 개별 링크로 바꾸지 않으므로 새로고침 후에도 기본 화면을 유지합니다.
 
@@ -26,3 +27,12 @@
     https://port-0-laity-shorts-mv4itaiva5851d33.sel3.cloudtype.app/?reel=prayer
 
 새 영상을 제공받으면 고유 reel_id를 추가해 같은 주소 형식을 사용합니다. 기존 링크의 ID나 연결 파일은 바꾸지 않습니다. 목적헌금 원본에서 십일조 장면은 확인되지 않았으며 내용을 추가·편집하지 않았습니다.
+
+## 신사모 릴스 배포 후 확인
+
+`신사모_릴스.mp4` 원본은 `public/videos/sinsamo.mp4`에 보관합니다. 기존 세 편 다음에 공개되도록 설정했습니다. 새 영상 등록은 README의 영상 교체·새 영상 추가 절차를 따릅니다.
+
+PR을 수동 병합하고 기존 Cloudtype 배포를 마친 뒤, 새 링크를 새 탭에서 열어 한 편만 표시되는지 확인합니다. 새로고침 후에도 같은 영상이 표시되는지 확인하고, 포스터가 보이고 실제로 재생되면 아래 문구를 보냅니다.
+
+    신사모에서 「우리 교회에 무슨 일이 일어나고 있을까요?」 영상을 공유합니다.
+    https://port-0-laity-shorts-mv4itaiva5851d33.sel3.cloudtype.app/?reel=sinsamo

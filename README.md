@@ -2,10 +2,10 @@
 
 ## 현재 상태와 공유 방식
 
-이번 변경은 **수동 병합·배포 후 적용 예정**입니다. 실제 Cloudtype 배포는 실행하지 않았습니다. 작업 기준 main은 `b3968f2`이며 세 영상 모두 배포 대상이었습니다. 운영 HTTPS 주소는 개발 환경의 프록시 CONNECT 403 때문에 실제 배포 범위를 확인하지 못했습니다. 사용자는 세 전용 페이지를 미리 공개하고 발송일에 링크만 보내는 방식을 선택했습니다. 현재 설정은 세 편 모두 published=true이며 날짜에 따른 자동 공개는 없습니다.
+신사모 릴스는 **수동 병합·배포 후 공개 예정**입니다. 기존 세 편과 신사모 릴스는 모두 `published: true`로 설정되어 있으며 날짜에 따른 자동 공개는 없습니다.
 
 - `/`: `media.json`에서 공개한 영상만 기존 순서대로 표시. 여러 편이면 세로 스크롤·스와이프.
-- `/?reel=responsibility`, `/?reel=essence`, `/?reel=prayer`: 해당 영상 **한 편만** 표시. 다른 영상의 제목·포스터·재생 주소·이동 링크 없음.
+- `/?reel=responsibility`, `/?reel=essence`, `/?reel=prayer`, `/?reel=sinsamo`: 해당 영상 **한 편만** 표시. 다른 영상의 제목·포스터·재생 주소·이동 링크 없음.
 - 미공개 영상의 개별 링크: “아직 공개되지 않은 영상입니다.”만 표시.
 - 잘못된 reel 값: 기본 화면. 공개 영상이 없으면 “공개된 영상이 아직 없습니다.” 표시.
 
@@ -14,8 +14,9 @@
 | 2026. 11. 17. | responsibility | 권한과 책임 / public/videos/responsibility.mp4 | true |
 | 2026. 11. 19. | essence | 목적헌금의 본질 / public/videos/offering.mp4 | true |
 | 2026. 11. 21. | prayer | 예배·기도·사역 참여 / public/videos/example.mp4 | true |
+| 2026. 11. 25. | sinsamo | 우리 교회에 무슨 일이 일어나고 있을까요? / public/videos/sinsamo.mp4 | true |
 
-세 페이지를 미리 공개해도 링크를 17·19·21일에 따로 보낼 수 있습니다. 발송 전 파일 접근도 막으려면, 배포 전 `media.json`에서 첫 편만 `published: true`, 나머지는 `false`로 바꾸고 아래 절차로 각각 수동 공개합니다. 이미 공개·다운로드된 영상의 회수나 비밀 유지를 보장하지 않습니다.
+신사모 릴스 발송 전에는 병합·배포 후 [전용 링크](https://port-0-laity-shorts-mv4itaiva5851d33.sel3.cloudtype.app/?reel=sinsamo)를 열어 실제 재생을 확인하세요.
 
 ## 공개 상태 변경과 다음 영상 발송
 
@@ -42,11 +43,11 @@ Docker와 Python 3이 필요합니다. Nginx가 정적 HTML·MP4를 제공하며
     python3 -m unittest discover -s tests -p test_site.py -v
     python3 scripts/verify_publication.py
 
-로컬에 Playwright·Chromium이 설치되어 있으면 네 공개 상태의 브라우저 검사도 실행할 수 있습니다.
+로컬에 Playwright·Chromium이 설치되어 있으면 각 공개 상태의 브라우저 검사도 실행할 수 있습니다.
 
     python3 scripts/verify_publication.py --browser
 
-검사는 임시 복사본에서 공개 0·1·2·3개 상태를 빌드하고 별도 로컬 컨테이너를 사용합니다. 저장소 공개 설정이나 운영 서비스는 수정하지 않습니다. 상세 결과와 제한은 [docs/VALIDATION.md](docs/VALIDATION.md)에 기록합니다.
+검사는 임시 복사본에서 공개 0개부터 전체 공개까지 빌드하고 별도 로컬 컨테이너를 사용합니다. 저장소 공개 설정이나 운영 서비스는 수정하지 않습니다. 상세 결과와 제한은 [docs/VALIDATION.md](docs/VALIDATION.md)에 기록합니다.
 
 ## 빌드와 미공개 파일 제외
 

@@ -1,4 +1,4 @@
-"""Build/run four isolated release fixtures; never changes repository publication flags."""
+"""Build/run all isolated release counts; never changes repository publication flags."""
 import argparse
 import json
 import os
@@ -21,7 +21,8 @@ def verify(browser=False):
     artifacts = Path(os.environ.get('SHORTS_ARTIFACTS', '/tmp/shorts-publication'))
     artifacts.mkdir(parents=True, exist_ok=True)
     results = []
-    for count in range(4):
+    source_items = json.loads((ROOT / 'media.json').read_text())
+    for count in range(len(source_items) + 1):
         with tempfile.TemporaryDirectory(prefix='shorts-publication-') as d:
             context = Path(d)
             for filename in ('Dockerfile', '.dockerignore', 'nginx.conf', 'nginx-main.conf'):
@@ -29,8 +30,7 @@ def verify(browser=False):
             shutil.copytree(ROOT / 'public', context / 'public')
             (context / 'scripts').mkdir()
             shutil.copyfile(ROOT / 'scripts/build.py', context / 'scripts/build.py')
-            items = json.loads((ROOT / 'media.json').read_text())
-            for index, item in enumerate(items): item['published'] = index < count
+            items = [dict(item, published=index < count) for index, item in enumerate(source_items)]
             manifest = context / 'media.json'; manifest.write_text(json.dumps(items))
             tag = 'laity-shorts:publication-test-' + str(count)
             name = 'shorts-publication-' + str(os.getpid()) + '-' + str(count)
