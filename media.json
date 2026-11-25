@@ -55,5 +55,24 @@
     "poster": "example.jpg",
     "published": true,
     "send_date": "2026-11-21"
+  },
+  {
+    "id": "sinsamo",
+    "source_name": "신사모_릴스.mp4",
+    "label": "우리 교회에 무슨 일이 일어나고 있을까요?",
+    "reel_id": "sinsamo",
+    "video": "sinsamo.mp4",
+    "poster": "sinsamo.jpg",
+    "published": true,
+    "send_date": "2026-11-25",
+    "duration": 52.833333,
+    "bytes": 1584512,
+    "sha256": "6521ea048ee7a12a4900df4156c2b4adcbbb764afbfb0d6d2191c5d674ed1b15",
+    "width": 720,
+    "height": 720,
+    "video_codec": "h264",
+    "audio": [
+      "aac"
+    ]
   }
 ]
