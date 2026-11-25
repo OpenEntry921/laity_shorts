@@ -5,7 +5,7 @@ COPY media.json media.json
 COPY public/ public/
 RUN python scripts/build.py
 
-FROM nginx:1.28-alpine@sha256:a8b39bd9cf0f83869a2162827a0caf6137ddf759d50a171451b335cecc87d236
+FROM docker.io/library/nginx@sha256:a8b39bd9cf0f83869a2162827a0caf6137ddf759d50a171451b335cecc87d236
 COPY --chmod=644 nginx-main.conf /etc/nginx/nginx.conf
 COPY --chmod=644 nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=builder /build/dist/reel-map.conf /etc/nginx/reel-map.conf
